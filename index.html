@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GeminiChat — AI Powered Chatbot</title>
+    <meta name="description" content="Intelligent AI chatbot powered by Google Gemini 2.5. Multiple personas, streaming responses, conversation history." />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+
+    <!-- ══ Background Glow and Grid ════════════════════════════════ -->
+    <div class="bg-glow-container" aria-hidden="true">
+      <div class="glow-orb orb-1"></div>
+      <div class="glow-orb orb-2"></div>
+      <div class="glow-orb orb-3"></div>
+      <div class="glow-orb orb-4"></div>
+      <div class="bg-grid-pattern"></div>
+    </div>
+
+    <!-- ══ Sidebar ══════════════════════════════════════════════════ -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <div class="logo-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2L2 7l10 5 10-5-10-5z" fill="url(#lg1)"/>
+              <path d="M2 17l10 5 10-5" stroke="url(#lg2)" stroke-width="1.8" stroke-linecap="round"/>
+              <path d="M2 12l10 5 10-5" stroke="url(#lg2)" stroke-width="1.8" stroke-linecap="round"/>
+              <defs>
+                <linearGradient id="lg1" x1="2" y1="7" x2="22" y2="7">
+                  <stop offset="0%" stop-color="#8b5cf6"/>
+                  <stop offset="100%" stop-color="#60a5fa"/>
+                </linearGradient>
+                <linearGradient id="lg2" x1="2" y1="12" x2="22" y2="12">
+                  <stop offset="0%" stop-color="#8b5cf6"/>
+                  <stop offset="100%" stop-color="#60a5fa"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <span class="logo-text">GeminiChat</span>
+        </div>
+        <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 12h18M3 6h18M3 18h18"/>
+          </svg>
+        </button>
+      </div>
+
+      <button class="new-chat-btn" id="newChatBtn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+        New Conversation
+      </button>
+
+      <div class="search-wrapper">
+        <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+        </svg>
+        <input type="text" class="search-input" id="searchInput" placeholder="Search… (Ctrl+K)" />
+        <button class="search-clear" id="searchClear" style="display:none">×</button>
+      </div>
+
+      <div class="search-results" id="searchResults" style="display:none"></div>
+
+      <div class="conversations-label">Conversations</div>
+      <div class="conversations-list" id="conversationsList" role="list"></div>
+
+      <div class="sidebar-footer">
+        <div class="footer-info" id="debugToggle" style="cursor:pointer" title="Click to toggle developer diagnostics">
+          <span class="footer-dot"></span>
+          Gemini 2.5 Flash · Online
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-left:auto">
+            <polyline points="18 15 12 9 6 15"/>
+          </svg>
+        </div>
+        <div class="debug-panel" id="debugPanel" style="display:none">
+          <div class="debug-row"><span>Status:</span><span class="debug-val green">Active</span></div>
+          <div class="debug-row"><span>Model:</span><span class="debug-val">gemini-2.5-flash</span></div>
+          <div class="debug-row"><span>API Key:</span><span class="debug-val" id="debugApiKey">Masked</span></div>
+          <div class="debug-row"><span>Latency:</span><span class="debug-val" id="debugLatency">0.0s</span></div>
+          <div class="debug-row"><span>Speech:</span><span class="debug-val" id="debugSpeech">Supported</span></div>
+          <div class="debug-row"><span>Msg Count:</span><span class="debug-val" id="debugMsgCount">0</span></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ══ Main ══════════════════════════════════════════════════════ -->
+    <main class="main" id="main">
+
+      <header class="topbar">
+        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 12h18M3 6h18M3 18h18"/>
+          </svg>
+        </button>
+        <div class="topbar-center">
+          <span class="current-conv-title" id="currentConvTitle">GeminiChat</span>
+          <span class="persona-badge" id="personaBadge">General</span>
+        </div>
+        <div class="topbar-actions">
+          <div class="theme-selector" id="themeSelector">
+            <button class="theme-dot active" data-theme="violet" title="Midnight Violet" style="background: #8b5cf6;" aria-label="Violet Theme"></button>
+            <button class="theme-dot" data-theme="cyan" title="Neon Cyan" style="background: #06b6d4;" aria-label="Cyan Theme"></button>
+            <button class="theme-dot" data-theme="amber" title="Cyberpunk Amber" style="background: #f59e0b;" aria-label="Amber Theme"></button>
+            <button class="theme-dot" data-theme="rose" title="Sakura Rose" style="background: #ec4899;" aria-label="Rose Theme"></button>
+            <button class="theme-dot" data-theme="emerald" title="Emerald Green" style="background: #10b981;" aria-label="Emerald Theme"></button>
+          </div>
+          <button class="icon-btn" id="darkLightBtn" title="Toggle Light/Dark Mode">
+            <svg class="sun-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.72" x2="5.64" y2="18.3"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+            </svg>
+            <svg class="moon-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+          </button>
+          <button class="icon-btn" id="renameBtn" style="display:none" title="Rename">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          </button>
+          <button class="icon-btn danger" id="deleteConvBtn" style="display:none" title="Delete">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Welcome -->
+      <div class="welcome-screen" id="welcomeScreen">
+        <div class="welcome-content">
+          <div class="welcome-logo">
+            <svg width="52" height="52" viewBox="0 0 24 24" fill="none">
+              <path d="M12 2L2 7l10 5 10-5-10-5z" fill="url(#wg1)"/>
+              <path d="M2 17l10 5 10-5" stroke="url(#wg2)" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M2 12l10 5 10-5" stroke="url(#wg2)" stroke-width="1.5" stroke-linecap="round"/>
+              <defs>
+                <linearGradient id="wg1" x1="2" y1="7" x2="22" y2="7">
+                  <stop offset="0%" stop-color="#8b5cf6"/>
+                  <stop offset="100%" stop-color="#60a5fa"/>
+                </linearGradient>
+                <linearGradient id="wg2" x1="2" y1="12" x2="22" y2="12">
+                  <stop offset="0%" stop-color="#8b5cf6"/>
+                  <stop offset="100%" stop-color="#60a5fa"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+
+          <div>
+            <h1 class="welcome-title">Welcome to GeminiChat</h1>
+            <p class="welcome-subtitle">Your intelligent AI companion powered by Google Gemini 2.5 — ask anything, code anything, learn anything.</p>
+          </div>
+
+          <div class="persona-grid">
+            <div class="persona-card" data-persona="default" role="button" tabindex="0">
+              <div class="persona-icon">🤖</div>
+              <div class="persona-name">General</div>
+              <div class="persona-desc">Helpful answers for anything</div>
+            </div>
+            <div class="persona-card" data-persona="coding" role="button" tabindex="0">
+              <div class="persona-icon">💻</div>
+              <div class="persona-name">Code Expert</div>
+              <div class="persona-desc">Debug, review &amp; write code</div>
+            </div>
+            <div class="persona-card" data-persona="teacher" role="button" tabindex="0">
+              <div class="persona-icon">📚</div>
+              <div class="persona-name">Teacher</div>
+              <div class="persona-desc">Learn step by step</div>
+            </div>
+            <div class="persona-card" data-persona="creative" role="button" tabindex="0">
+              <div class="persona-icon">🎨</div>
+              <div class="persona-name">Creative</div>
+              <div class="persona-desc">Stories, poetry, ideas</div>
+            </div>
+            <div class="persona-card" data-persona="analyst" role="button" tabindex="0">
+              <div class="persona-icon">📊</div>
+              <div class="persona-name">Analyst</div>
+              <div class="persona-desc">Research &amp; data insights</div>
+            </div>
+          </div>
+
+          <div class="welcome-hint">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>
+            </svg>
+            Select a persona above or start typing in the box below
+          </div>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      <div class="messages-container" id="messagesContainer" style="display:none" role="log" aria-live="polite"></div>
+
+      <!-- Typing Indicator -->
+      <div class="typing-indicator" id="typingIndicator" style="display:none">
+        <div class="typing-avatar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L2 7l10 5 10-5-10-5z" fill="url(#tg)"/>
+            <defs>
+              <linearGradient id="tg" x1="2" y1="7" x2="22" y2="7">
+                <stop offset="0%" stop-color="#8b5cf6"/>
+                <stop offset="100%" stop-color="#60a5fa"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div class="typing-dots"><span></span><span></span><span></span></div>
+        <span class="typing-text">Gemini is thinking…</span>
+      </div>
+
+      <!-- Input -->
+      <div class="input-area">
+        <div class="persona-selector-row">
+          <span class="persona-label">Persona:</span>
+          <select class="persona-select" id="personaSelect">
+            <option value="default">🤖 General</option>
+            <option value="coding">💻 Code Expert</option>
+            <option value="teacher">📚 Teacher</option>
+            <option value="creative">🎨 Creative</option>
+            <option value="analyst">📊 Analyst</option>
+          </select>
+        </div>
+        <div class="input-box">
+          <textarea id="messageInput" class="message-input"
+            placeholder="Ask me anything… (Enter to send · Shift+Enter for new line)"
+            rows="1"></textarea>
+          <button class="mic-btn" id="micBtn" title="Voice Input" aria-label="Use voice input">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+              <line x1="12" y1="19" x2="12" y2="23"/>
+              <line x1="8" y1="23" x2="16" y2="23"/>
+            </svg>
+          </button>
+          <button class="send-btn" id="sendBtn" disabled>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 2L11 13M22 2L15 22l-4-9-9-4 20-7z"/>
+            </svg>
+          </button>
+        </div>
+        <p class="input-disclaimer">GeminiChat can make mistakes — always verify important information.</p>
+      </div>
+    </main>
+
+    <!-- ══ Delete Modal ══════════════════════════════════════════════ -->
+    <div class="modal-overlay" id="deleteModal" role="dialog" aria-modal="true" style="display:none">
+      <div class="modal">
+        <div class="modal-icon danger">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14H6L5 6M10 11v6M14 11v6M9 6V4h6v2"/>
+          </svg>
+        </div>
+        <h2 class="modal-title">Delete this conversation?</h2>
+        <p class="modal-body">This will permanently delete the conversation and all its messages. This action cannot be undone.</p>
+        <div class="modal-actions">
+          <button class="btn btn-ghost" id="cancelDeleteBtn">Cancel</button>
+          <button class="btn btn-danger" id="confirmDeleteBtn">Delete forever</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ Rename Modal ══════════════════════════════════════════════ -->
+    <div class="modal-overlay" id="renameModal" role="dialog" aria-modal="true" style="display:none">
+      <div class="modal">
+        <h2 class="modal-title">Rename Conversation</h2>
+        <input type="text" class="modal-input" id="renameInput" placeholder="Enter a new name…" maxlength="80"/>
+        <div class="modal-actions">
+          <button class="btn btn-ghost" id="cancelRenameBtn">Cancel</button>
+          <button class="btn btn-primary" id="confirmRenameBtn">Rename</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ Toasts ════════════════════════════════════════════════════ -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
