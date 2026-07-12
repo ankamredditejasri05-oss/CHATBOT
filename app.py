@@ -15,7 +15,7 @@ import storage
 
 # ── Environment ───────────────────────────────────────────────────────────────
 load_dotenv()
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "AQ.Ab8RN6JHfI5K8T5wvOR2t5Gw8tw_WlEkrxip3YiIRB60e4jdfQ")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "ENTER YOUR API KEY")
 PORT = int(os.getenv("PORT", 3000))
 
 # ── App ───────────────────────────────────────────────────────────────────────
